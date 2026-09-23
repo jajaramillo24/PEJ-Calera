@@ -27,6 +27,8 @@ menu?.querySelectorAll('a').forEach((link) => {
 const timeline = document.querySelector('[data-timeline]');
 const tabs = Array.from(timeline?.querySelectorAll('[role="tab"]') ?? []);
 const panels = Array.from(timeline?.querySelectorAll('[role="tabpanel"]') ?? []);
+const mobileTimeline = window.matchMedia('(max-width: 560px)');
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const selectTab = (selectedTab) => {
   const target = selectedTab.dataset.tab;
@@ -38,6 +40,13 @@ const selectTab = (selectedTab) => {
   panels.forEach((panel) => {
     panel.hidden = panel.dataset.panel !== target;
   });
+  if (mobileTimeline.matches) {
+    selectedTab.scrollIntoView({
+      behavior: reducedMotion.matches ? 'auto' : 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }
 };
 
 tabs.forEach((tab, index) => {
