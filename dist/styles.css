@@ -31,6 +31,8 @@ button { font: inherit; }
 :focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
 ::selection { background: var(--orange); color: #172237; }
 
+.splash { display: none; }
+
 .sr-only, .skip-link:not(:focus) {
   position: absolute;
   width: 1px;
@@ -343,6 +345,7 @@ footer span { color: var(--sky); }
   .timeline { display: block; border: 0; }
   .timeline-tabs {
     display: flex;
+    flex-direction: row;
     gap: 8px;
     margin: 0 -18px;
     padding: 2px 18px 14px;
@@ -382,6 +385,112 @@ footer span { color: var(--sky); }
     line-height: 1.45;
   }
   .panel-result strong { display: block; margin-bottom: 3px; color: var(--orange); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  body.splash-open { overflow: hidden; }
+  .splash {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: max(24px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 86% 12%, rgba(254, 120, 1, 0.2), transparent 29%),
+      radial-gradient(circle at 5% 92%, rgba(131, 168, 232, 0.22), transparent 34%),
+      linear-gradient(155deg, #073f92 0%, #052f70 54%, #031d46 100%);
+    color: var(--cream);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .splash::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity: 0.45;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  }
+  .splash::after {
+    content: "";
+    position: absolute;
+    width: min(84vw, 390px);
+    aspect-ratio: 1;
+    border: 1px solid rgba(251, 243, 208, 0.12);
+    border-radius: 50%;
+    box-shadow: 0 0 0 48px rgba(251, 243, 208, 0.025), 0 0 0 96px rgba(251, 243, 208, 0.018);
+  }
+  .splash.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    animation: splash-away 2.65s cubic-bezier(0.7, 0, 0.25, 1) both;
+  }
+  .splash-glow { position: absolute; border-radius: 50%; filter: blur(2px); }
+  .splash-glow-one { top: -70px; right: -85px; width: 210px; height: 210px; border: 1px solid rgba(254, 120, 1, 0.38); }
+  .splash-glow-two { bottom: 8%; left: -80px; width: 180px; height: 180px; border: 1px solid rgba(131, 168, 232, 0.35); }
+  .splash-content { position: relative; z-index: 2; width: 100%; max-width: 360px; text-align: center; }
+  .splash-mark {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 30px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(251, 243, 208, 0.28);
+    border-radius: 34px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    animation: splash-mark-in 900ms cubic-bezier(0.2, 0.85, 0.25, 1) 100ms both;
+  }
+  .splash-mark span { position: absolute; inset: -9px; border: 1px solid rgba(254, 120, 1, 0.5); border-radius: 42px; transform: rotate(8deg); }
+  .splash-mark img { width: 82px; height: 82px; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.18)); }
+  .splash-place { margin: 0 0 14px; color: var(--orange); font-size: 0.7rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; animation: splash-rise 650ms ease 480ms both; }
+  .splash-name { margin: 0; color: var(--cream); font-family: var(--display); font-size: clamp(2.15rem, 11vw, 3rem); line-height: 0.98; letter-spacing: -0.045em; }
+  .splash-name span { display: block; animation: splash-rise 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .splash-name span:first-child { animation-delay: 560ms; }
+  .splash-name span:last-child { animation-delay: 650ms; }
+  .splash-line { width: 104px; height: 2px; margin: 24px auto 18px; overflow: hidden; background: rgba(251, 243, 208, 0.13); }
+  .splash-line span { display: block; width: 100%; height: 100%; background: var(--orange); transform-origin: left; animation: splash-line-in 680ms ease 920ms both; }
+  .splash-message { margin: 0; color: #dce7f9; font-size: 0.96rem; letter-spacing: 0.015em; animation: splash-rise 600ms ease 1.04s both; }
+  .splash-skip {
+    position: absolute;
+    z-index: 4;
+    top: max(18px, env(safe-area-inset-top));
+    right: 18px;
+    padding: 8px 10px;
+    border: 0;
+    background: transparent;
+    color: rgba(251, 243, 208, 0.7);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .splash-signature { position: absolute; z-index: 2; right: 0; bottom: max(24px, env(safe-area-inset-bottom)); left: 0; margin: 0; color: rgba(251, 243, 208, 0.38); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.24em; text-align: center; }
+  .splash-signature span { padding: 0 5px; color: var(--orange); }
+
+  @keyframes splash-mark-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.78) rotate(-5deg); }
+    to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  }
+  @keyframes splash-rise {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes splash-line-in {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes splash-away {
+    0%, 82% { opacity: 1; visibility: visible; }
+    100% { opacity: 0; visibility: hidden; }
+  }
 
   .future-copy { padding: 62px 18px 68px; }
   .stewardship { padding-top: 64px; }
