@@ -101,7 +101,6 @@ const revealGroups = [
   '.principle-list > div',
   '.calendar-layout > *',
   '.future-copy > *',
-  '.stewardship > *',
   '.closing > *',
 ];
 
