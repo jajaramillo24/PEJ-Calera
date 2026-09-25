@@ -8,6 +8,11 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 document.body.classList.add('motion-ready');
 
+const trackEvent = (eventName, parameters = {}) => {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', eventName, parameters);
+};
+
 const closeSplash = () => {
   splash?.classList.remove('is-active');
   document.body.classList.remove('splash-open');
@@ -68,6 +73,7 @@ const selectTab = (selectedTab) => {
       behavior: reducedMotion.matches ? 'auto' : 'smooth',
     });
   }
+  trackEvent('timeline_stage_view', { stage: target });
 };
 
 tabs.forEach((tab, index) => {
@@ -143,6 +149,40 @@ if ('IntersectionObserver' in window) {
   }, { rootMargin: '-24% 0px -58% 0px', threshold: [0, 0.2, 0.5] });
 
   observedSections.forEach((section) => sectionObserver.observe(section));
+}
+
+navLinks.forEach((link) => {
+  link.addEventListener('click', () => {
+    trackEvent('navigation_click', {
+      destination: link.getAttribute('href'),
+      link_text: link.textContent.trim(),
+    });
+  });
+});
+
+document.querySelectorAll('.hero-actions a, .closing .button').forEach((link) => {
+  link.addEventListener('click', () => {
+    trackEvent('cta_click', {
+      destination: link.getAttribute('href'),
+      cta_text: link.textContent.trim(),
+    });
+  });
+});
+
+if ('IntersectionObserver' in window) {
+  const viewedSections = new Set();
+  const analyticsSections = Array.from(document.querySelectorAll('main > section'));
+  const analyticsObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting || viewedSections.has(entry.target)) return;
+      const sectionName = entry.target.id || entry.target.getAttribute('aria-labelledby') || entry.target.classList[1] || 'section';
+      viewedSections.add(entry.target);
+      trackEvent('section_view', { section_name: sectionName });
+      analyticsObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: '-20% 0px -55% 0px', threshold: 0 });
+
+  analyticsSections.forEach((section) => analyticsObserver.observe(section));
 }
 
 const hero = document.querySelector('.hero');
