@@ -46,6 +46,7 @@ menu?.querySelectorAll('a').forEach((link) => {
 });
 
 const timeline = document.querySelector('[data-timeline]');
+const tabList = timeline?.querySelector('[role="tablist"]');
 const tabs = Array.from(timeline?.querySelectorAll('[role="tab"]') ?? []);
 const panels = Array.from(timeline?.querySelectorAll('[role="tabpanel"]') ?? []);
 const mobileTimeline = window.matchMedia('(max-width: 560px)');
@@ -60,11 +61,11 @@ const selectTab = (selectedTab) => {
   panels.forEach((panel) => {
     panel.hidden = panel.dataset.panel !== target;
   });
-  if (mobileTimeline.matches) {
-    selectedTab.scrollIntoView({
+  if (mobileTimeline.matches && tabList) {
+    const centeredPosition = selectedTab.offsetLeft - (tabList.clientWidth - selectedTab.offsetWidth) / 2;
+    tabList.scrollTo({
+      left: Math.max(0, centeredPosition),
       behavior: reducedMotion.matches ? 'auto' : 'smooth',
-      block: 'nearest',
-      inline: 'center',
     });
   }
 };

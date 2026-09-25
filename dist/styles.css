@@ -169,6 +169,7 @@ button { font: inherit; }
 
 .calendar { max-width: none; padding-right: max(24px, calc((100vw - var(--content)) / 2)); padding-left: max(24px, calc((100vw - var(--content)) / 2)); }
 .calendar-layout { display: grid; grid-template-columns: 0.82fr 1.18fr; gap: 80px; }
+.calendar-layout > *, .timeline, .timeline-panels { min-width: 0; }
 .calendar-heading > p { max-width: 430px; margin: 26px 0 0; color: var(--muted); }
 .timeline { display: grid; grid-template-columns: 220px 1fr; border-top: 2px solid var(--blue); border-bottom: 1px solid var(--line); }
 .timeline-tabs { display: flex; flex-direction: column; border-right: 1px solid var(--line); }
@@ -401,6 +402,7 @@ footer span { color: var(--sky); }
     display: flex;
     flex-direction: row;
     gap: 8px;
+    width: calc(100% + 36px);
     margin: 0 -18px;
     padding: 2px 18px 14px;
     overflow-x: auto;
