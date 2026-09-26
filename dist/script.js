@@ -5,6 +5,8 @@ const splash = document.querySelector('[data-splash]');
 const splashClose = document.querySelector('[data-splash-close]');
 const mobileViewport = window.matchMedia('(max-width: 560px)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const signupForm = document.querySelector('[data-signup-form]');
+const signupApiUrl = 'https://script.google.com/macros/s/AKfycbwnFRXTZT0s2_-K8MAMRmmTK3TI97cCCwT7JuiriwdHtTL6f4Y2t_OO87w5QsILh2Ud/exec';
 
 document.body.classList.add('motion-ready');
 
@@ -101,6 +103,8 @@ const revealGroups = [
   '.principle-list > div',
   '.calendar-layout > *',
   '.future-copy > *',
+  '.signup-copy > *',
+  '.signup-form',
   '.closing > *',
 ];
 
@@ -157,6 +161,117 @@ navLinks.forEach((link) => {
       link_text: link.textContent.trim(),
     });
   });
+});
+
+const signupFields = signupForm ? Array.from(signupForm.querySelectorAll('input:not([name="website"])')) : [];
+const signupStatus = signupForm?.querySelector('[data-form-status]');
+const signupButton = signupForm?.querySelector('[data-submit-button]');
+const signupButtonLabel = signupForm?.querySelector('[data-submit-label]');
+
+const signupMessages = {
+  name: 'Ingresá tu nombre y apellido.',
+  email: 'Ingresá un email válido.',
+  phone: 'Ingresá un teléfono válido.',
+  age: 'La propuesta es para jóvenes de 16 a 24 años.',
+};
+
+const setFieldError = (field, message = '') => {
+  const error = signupForm?.querySelector(`[data-error-for="${field.name}"]`);
+  field.setAttribute('aria-invalid', String(Boolean(message)));
+  if (error) error.textContent = message;
+};
+
+const validateSignupField = (field) => {
+  const value = field.value.trim();
+  let message = '';
+
+  if (!value) message = signupMessages[field.name];
+  else if (field.name === 'name' && value.length < 2) message = signupMessages.name;
+  else if (field.name === 'email' && field.validity.typeMismatch) message = signupMessages.email;
+  else if (field.name === 'phone' && (!/^[+()\d\s.-]+$/.test(value) || value.replace(/\D/g, '').length < 6)) message = signupMessages.phone;
+  else if (field.name === 'age') {
+    const age = Number(value);
+    if (!Number.isInteger(age) || age < 16 || age > 24) message = signupMessages.age;
+  }
+
+  setFieldError(field, message);
+  return !message;
+};
+
+signupFields.forEach((field) => {
+  field.addEventListener('blur', () => validateSignupField(field));
+  field.addEventListener('input', () => {
+    if (field.getAttribute('aria-invalid') === 'true') validateSignupField(field);
+  });
+});
+
+signupForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  signupStatus?.classList.remove('is-error', 'is-success');
+  if (signupStatus) signupStatus.textContent = '';
+
+  const validFields = signupFields.map(validateSignupField);
+  if (validFields.includes(false)) {
+    signupFields.find((field) => field.getAttribute('aria-invalid') === 'true')?.focus();
+    trackEvent('signup_validation_error');
+    return;
+  }
+
+  const formData = new FormData(signupForm);
+  if (formData.get('website')) return;
+
+  const payload = {
+    name: String(formData.get('name') || '').trim(),
+    email: String(formData.get('email') || '').trim().toLowerCase(),
+    phone: String(formData.get('phone') || '').trim(),
+    age: Number(formData.get('age')),
+  };
+
+  if (signupButton) {
+    signupButton.disabled = true;
+    signupButton.classList.add('is-loading');
+  }
+  if (signupButtonLabel) signupButtonLabel.textContent = 'Enviando';
+
+  try {
+    const body = new URLSearchParams({
+      nombre: payload.name,
+      email: payload.email,
+      telefono: payload.phone,
+      edad: String(payload.age),
+      website: '',
+    });
+
+    await fetch(signupApiUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      referrerPolicy: 'no-referrer',
+      body,
+    });
+
+    signupForm.reset();
+    signupForm.classList.add('is-success');
+    signupFields.forEach((field) => setFieldError(field));
+    if (signupStatus) {
+      signupStatus.textContent = '¡Listo! Enviamos tu inscripción. El equipo del PEJ se va a comunicar con vos para contarte el próximo paso.';
+      signupStatus.classList.add('is-success');
+    }
+    trackEvent('signup_submit_success', { age: payload.age });
+  } catch (error) {
+    if (signupStatus) {
+      signupStatus.textContent = error instanceof Error && error.message
+        ? error.message
+        : 'No pudimos enviar tu inscripción. Revisá tu conexión e intentá nuevamente.';
+      signupStatus.classList.add('is-error');
+    }
+    trackEvent('signup_submit_error');
+  } finally {
+    if (signupButton) {
+      signupButton.disabled = false;
+      signupButton.classList.remove('is-loading');
+    }
+    if (signupButtonLabel) signupButtonLabel.textContent = 'Enviar inscripción';
+  }
 });
 
 document.querySelectorAll('.hero-actions a, .closing .button').forEach((link) => {
